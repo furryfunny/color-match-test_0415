@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顏色與文字匹配測試</title>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <style>
+        /* 基本樣式 */
+        body { 
+            font-family: 'Microsoft JhengHei', sans-serif; 
+            text-align: center; 
+            transition: background-color 0.2s;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        #word, #testWord { 
+            font-size: 3em; 
+            margin: 20px; 
+            color: white; 
+            font-weight: bold; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* 完全隱藏計分板 */
+        #scoreboard { 
+            display: none !important;
+            visibility: hidden;
+            position: absolute;
+            left: -9999px;
+        }
+
+        #gameSection, #formSection, #resultSection, #testSection, #breakSection { 
+            display: none; 
+        }
+
+        .inline-buttons { 
+            display: flex; 
+            justify-content: center; 
+            gap: 20px; 
+            margin-top: 30px;
+        }
+
+        .center-container { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 80vh; 
+            flex-direction: column; 
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 表單樣式 */
+        .form-group {
+            margin: 20px 0;
+            text-align: left;
+            width: 350px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            color: #333;
+            background-color: white;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            padding-right: 2.5em;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        select:hover {
+            border-color: #3498db;
+        }
+
+        select.error {
+            border-color: #e74c3c;
+            background-color: #fff8f8;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+            padding: 5px;
+        }
+
+        /* 按鈕樣式 */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 遊戲按鈕樣式 - 更大的O/X */
+        .game-button {
+            background-color: #A0A0A0;
+            color: white;
+            font-size: 112px; /* 160px的70% */
+            padding: 40px 80px;
+            margin: 0 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 160px;
+            height: 160px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1;
+        }
+
+        .game-button:hover {
+            background-color: #888888;
+            transform: translateY(-2px);
+        }
+
+        /* YouTube播放器容器 */
+        #playerContainer {
+            position: fixed;
+            bottom: -9999px;
+            left: -9999px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 進度條樣式 */
+        .progress-bar {
+            width: 300px;
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.3s ease;
+        }
+
+        /* 反饋訊息樣式 */
+        .test-feedback {
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* 休息區塊樣式 */
+        .break-info {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 結果區塊樣式 */
+        .result-info {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+
+        .round-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #4CAF50;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>顏色與文字匹配測試</h1>
+    
+    <button id="startButton" onclick="showForm()">開始測試</button>
+
+    <!-- 表單區塊 -->
+    <div id="formSection" class="center-container">
+        <h2 class="form-title">基本資料填寫</h2>
+        
+        <div class="form-group">
+            <label for="musicHabit">是否有聽音樂習慣:</label>
+            <select id="musicHabit">
+                <option value="">--請選擇--</option>
+                <option value="yes">是</option>
+                <option value="no">否</option>
+            </select>
+            <div class="error-message">請選擇是否有聽音樂習慣</div>
+        </div>
+
+        <div class="form-group">
+            <label for="musicMajor">音樂系或非音樂系:</label>
+            <select id="musicMajor">
+                <option value="">--請選擇--</option>
+                <option value="music">音樂系</option>
+                <option value="non-music">非音樂系</option>
+            </select>
+            <div class="error-message">請選擇您的科系類別</div>
+        </div>
+
+        <div class="form-group">
+            <label for="grade">學制年級:</label>
+            <select id="grade">
+                <option value="">--請選擇--</option>
+                <option value="undergraduate">大學生</option>
+                <option value="graduate">研究生</option>
+            </select>
+            <div class="error-message">請選擇您的學制年級</div>
+        </div>
+
+        <div class="form-group">
+            <label for="musicListeningHabit">工作時聆聽音樂之習慣:</label>
+            <select id="musicListeningHabit">
+                <option value="">--請選擇--</option>
+                <option value="always">總是</option>
+                <option value="often">經常</option>
+                <option value="sometimes">偶爾</option>
+                <option value="rarely">很少</option>
+                <option value="never">從未</option>
+            </select>
+            <div class="error-message">請選擇您的聆聽音樂習慣</div>
+        </div>
+
+        <div class="form-group">
+            <label for="musicPreference">之前的聽音樂偏好:</label>
+            <select id="musicPreference">
+                <option value="">--請選擇--</option>
+                <option value="classical">古典</option>
+                <option value="none">無</option>
+                <option value="indie">獨立音樂</option>
+                <option value="jazz">爵士</option>
+                <option value="other">其他</option>
+            </select>
+            <div class="error-message">請選擇您的音樂偏好</div>
+        </div>
+
+        <button onclick="submitForm()">下一步</button>
+    </div>
+
+    <!-- 測試區塊 -->
+    <div id="testSection" class="center-container">
+        <h2>測試階段</h2>
+        <div class="progress-bar">
+            <div class="progress" style="width: 0%"></div>
+        </div>
+        <p>請判斷文字與背景顏色是否匹配</p>
+        <div id="testContainer">
+            <div id="testWord">顏色</div>
+            <div class="inline-buttons">
+                <button class="game-button" onclick="checkTestAnswer(true)">O</button>
+                <button class="game-button" onclick="checkTestAnswer(false)">X</button>
+            </div>
+        </div>
+        <p id="testFeedback"></p>
+        <button id="startGameButton" style="display:none;" onclick="startGame()">進入遊戲</button>
+    </div>
+
+    <!-- 遊戲區塊 -->
+    <div id="gameSection" class="center-container">
+        <div id="word">顏色</div>
+        <div class="inline-buttons">
+            <button class="game-button" onclick="checkAnswer(true)">O</button>
+            <button class="game-button" onclick="checkAnswer(false)">X</button>
+        </div>
+        <div id="scoreboard">
+            <p>正確數量: <span id="correct">0</span></p>
+            <p>錯誤數量: <span id="wrong">0</span></p>
+            <p>剩餘時間: <span id="timer">30</span> 秒</p>
+        </div>
+    </div>
+
+    <!-- 休息區塊 -->
+    <div id="breakSection" class="center-container">
+        <h2>休息時間</h2>
+        <div class="break-info">
+            <p>剛才的測試結果：</p>
+            <p>正確: <span id="break-correct">0</span> 次</p>
+            <p>錯誤: <span id="break-wrong">0</span> 次</p>
+            <p>下一回合還是會有 30 秒的時間，請充分休息後再繼續。</p>
+            <p>休息剩餘時間：<span id="break-timer">10</span> 秒</p>
+        </div>
+        <button id="nextRoundButton" style="display:none;" onclick="startGame()">開始下一關</button>
+    </div>
+
+    <!-- 結果區塊 -->
+    <div id="resultSection" class="center-container">
+        <h2>測試結果</h2>
+        <div class="result-info">
+            <p id="roundResults"></p>
+            <p>最佳回合: 第 <span id="bestRound">1</span> 回合</p>
+        </div>
+        <button onclick="restartGame()">重新開始</button>
+    </div>
+
+    <!-- YouTube播放器容器 -->
+    <div id="playerContainer">
+        <div id="player"></div>
+    </div>
+
+    <script>
+        let words = ["紅色", "藍色", "綠色", "黃色"];
+        let colors = ["#D98880", "#85C1E9", "#A9DFBF", "#F7DC6F"];
+        let testRound = 0;
+        let gameRound = 0;
+        let timer;
+        let roundResults = [];
+        let musicPreference = '';
+
+        // 音樂播放順序設定
+        const musicSequences = {
+            'always': ['jazz', 'classical', 'none', 'indie'],
+            'often': ['classical', 'jazz', 'none', 'indie'],
+            'sometimes': ['indie', 'jazz', 'none', 'classical'],
+            'rarely': ['indie', 'classical', 'none', 'jazz'],
+            'never': ['classical', 'indie', 'none', 'jazz']
+        };
+
+        // 音樂資料設定
+        const musicData = {
+            'jazz': {
+                videoId: '-t0snL80158',
+                startTime: 50
+            },
+            'classical': {
+                videoId: '9iePyP2HOr8',
+                startTime: 12
+            },
+            'indie': {
+                videoId: 'WPpDyIJdasg',
+                startTime: 100
+            }
+        };
+
+        let player;
+        let currentMusicSequence = [];
+        let currentRoundMusic = '';
+        let bestRoundMusic = '';
+
+        // YouTube Player API 準備就緒
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '0',
+                width: '0',
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // 播放器準備就緒
+            player.setVolume(50); // 設定音量為50%
+        }
+
+        function onPlayerStateChange(event) {
+            // 如果影片結束，重新從指定時間開始播放
+            if (event.data === YT.PlayerState.ENDED && currentRoundMusic !== 'none') {
+                const musicInfo = musicData[currentRoundMusic];
+                if (musicInfo) {
+                    player.seekTo(musicInfo.startTime);
+                    player.playVideo();
+                }
+            }
+        }
+
+        // 改進的音樂播放邏輯
+        function playMusic(musicType) {
+            if (musicType === 'none') {
+                if (player) {
+                    player.stopVideo();
+                }
+                return;
+            }
+
+            const musicInfo = musicData[musicType];
+            if (musicInfo && player) {
+                // 檢查是否已經在播放同一首歌
+                if (player.getVideoData && 
+                    player.getVideoData() && 
+                    player.getVideoData().video_id === musicInfo.videoId &&
+                    player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    return; // 如果是同一首歌且正在播放，就不要重新載入
+                }
+                player.loadVideoById({
+                    'videoId': musicInfo.videoId,
+                    'startSeconds': musicInfo.startTime
+                });
+            }
+        }
+
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+
+        function showForm() {
+            document.getElementById("startButton").style.display = "none";
+            document.getElementById("formSection").style.display = "block";
+        }
+
+        function submitForm() {
+            const selects = [
+                { id: "musicHabit", label: "是否有聽音樂習慣" },
+                { id: "musicMajor", label: "音樂系或非音樂系" },
+                { id: "grade", label: "學制年級" },
+                { id: "musicListeningHabit", label: "工作時聆聽音樂之習慣" },
+                { id: "musicPreference", label: "之前的聽音樂偏好" }
+            ];
+
+            let isValid = true;
+
+            selects.forEach(item => {
+                const select = document.getElementById(item.id);
+                const errorMessage = select.nextElementSibling;
+                
+                if (!select.value) {
+                    isValid = false;
+                    select.classList.add('error');
+                    errorMessage.style.display = 'block';
+                } else {
+                    select.classList.remove('error');
+                    errorMessage.style.display = 'none';
+                }
+            });
+
+            if (!isValid) {
+                return;
+            }
+
+            const musicHabit = document.getElementById("musicListeningHabit").value;
+            currentMusicSequence = [...musicSequences[musicHabit]];
+            currentRoundMusic = currentMusicSequence[0];
+            playMusic(currentRoundMusic);
+
+            document.getElementById("formSection").style.display = "none";
+            document.getElementById("testSection").style.display = "block";
+            showTestWord();
+        }
+
+        function showTestWord() {
+            const progressBar = document.querySelector('.progress');
+            const progressPercent = (testRound / 3) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+
+            if (testRound >= 3) {
+                document.getElementById("testFeedback").innerText = "測試已完成";
+                document.getElementById("testFeedback").className = "test-feedback feedback-correct";
+                document.getElementById("startGameButton").style.display = "block";
+                return;
+            }
+
+            let wordIndex = getRandomInt(words.length);
+            let colorIndex = getRandomInt(colors.length);
+            
+            if (testRound === 0) {
+                wordIndex = colorIndex;
+            } else if (testRound === 1) {
+                wordIndex = (colorIndex + 1) % colors.length;
+            }
+            
+            document.getElementById("testWord").innerText = words[wordIndex];
+            document.body.style.backgroundColor = colors[colorIndex];
+            document.getElementById("testWord").setAttribute("data-correct", wordIndex === colorIndex);
+        }
+
+        function checkTestAnswer(userChoice) {
+            let correct = document.getElementById("testWord").getAttribute("data-correct") === "true";
+            let feedback = document.getElementById("testFeedback");
+            
+            if (userChoice === correct) {
+                feedback.innerText = "答對了！";
+                feedback.className = "test-feedback feedback-correct";
+            } else {
+                feedback.innerText = "答錯了！正確答案是" + (correct ? "匹配" : "不匹配");
+                feedback.className = "test-feedback feedback-wrong";
+            }
+
+            testRound++;
+            
+            const progressBar = document.querySelector('.progress');
+            const progressPercent = (testRound / 3) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+
+            if (testRound < 3) {
+                setTimeout(() => {
+                    feedback.innerText = `準備第 ${testRound + 1} 題...`;
+                    feedback.className = "test-feedback";
+                    setTimeout(showTestWord, 1000);
+                }, 1500);
+            } else {
+                setTimeout(() => {
+                    feedback.innerText = "測試完成！您可以開始正式遊戲了";
+                    feedback.className = "test-feedback feedback-correct";
+                    document.getElementById("startGameButton").style.display = "block";
+                }, 1500);
+            }
+        }
+
+        function startGame() {
+            document.getElementById("testSection").style.display = "none";
+            document.getElementById("breakSection").style.display = "none";
+            document.getElementById("gameSection").style.display = "block";
+            gameRound++;
+            
+            if (gameRound > 4) {
+                showResult();
+                return;
+            }
+
+            if (gameRound === 1) {
+                alert("接下來有 30 秒的時間進行測試，準備好就點擊確定開始！");
+            }
+
+            // 只有在需要時才切換音樂
+            if (currentRoundMusic !== currentMusicSequence[gameRound - 1]) {
+                currentRoundMusic = currentMusicSequence[gameRound - 1];
+                playMusic(currentRoundMusic);
+            }
+            
+            startTimer();
+            generateQuestion();
+        }
+
+        function generateQuestion() {
+            let wordIndex = getRandomInt(words.length);
+            let colorIndex = getRandomInt(colors.length);
+            document.getElementById("word").innerText = words[wordIndex];
+            document.body.style.backgroundColor = colors[colorIndex];
+            document.getElementById("word").setAttribute("data-correct", wordIndex === colorIndex);
+        }
+
+        function checkAnswer(isCorrect) {
+            let correct = document.getElementById("word").getAttribute("data-correct") === "true";
+            if (isCorrect === correct) {
+                document.getElementById("correct").innerText = parseInt(document.getElementById("correct").innerText) + 1;
+            } else {
+                document.getElementById("wrong").innerText = parseInt(document.getElementById("wrong").innerText) + 1;
+            }
+            generateQuestion();
+        }
+
+        function startTimer() {
+            let timeLeft = 30;
+            document.getElementById("timer").innerText = timeLeft;
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    saveRoundResults();
+                    if (gameRound < 4) {
+                        showBreak();
+                    } else {
+                        showResult();
+                    }
+                }
+            }, 1000);
+        }
+
+        function saveRoundResults() {
+            let correct = parseInt(document.getElementById("correct").innerText);
+            let wrong = parseInt(document.getElementById("wrong").innerText);
+            roundResults.push({ round: gameRound, correct: correct, wrong: wrong });
+            document.getElementById("correct").innerText = 0;
+            document.getElementById("wrong").innerText = 0;
+        }
+
+        function showBreak() {
+            const currentResult = roundResults[roundResults.length - 1];
+            document.getElementById("gameSection").style.display = "none";
+            document.getElementById("breakSection").style.display = "block";
+            document.getElementById("nextRoundButton").style.display = "none";
+            
+            document.getElementById("break-correct").innerText = currentResult.correct;
+            document.getElementById("break-wrong").innerText = currentResult.wrong;
+            
+            // 只有在需要時才切換音樂
+            if (gameRound < 4 && currentRoundMusic !== currentMusicSequence[gameRound]) {
+                currentRoundMusic = currentMusicSequence[gameRound];
+                playMusic(currentRoundMusic);
+            }
+            
+            let breakTime = 10;
+            const breakTimer = setInterval(() => {
+                breakTime--;
+                document.getElementById("break-timer").innerText = breakTime;
+                if (breakTime <= 0) {
+                    clearInterval(breakTimer);
+                    document.getElementById("nextRoundButton").style.display = "block";
+                }
+            }, 1000);
+        }
+
+        function showResult() {
+            document.getElementById("gameSection").style.display = "none";
+            document.getElementById("breakSection").style.display = "none";
+            document.getElementById("resultSection").style.display = "block";
+            
+            let roundResultsText = roundResults.map(result => 
+                `<div class="round-result">
+                    第${result.round}回合 - 正確: ${result.correct} 錯誤: ${result.wrong}
+                </div>`
+            ).join('');
+            
+            document.getElementById("roundResults").innerHTML = roundResultsText;
+            
+            let bestRound = roundResults.reduce((best, current) => 
+                (current.correct > best.correct ? current : best), roundResults[0]);
+            document.getElementById("bestRound").innerText = bestRound.round;
+            bestRoundMusic = currentMusicSequence[bestRound.round - 1];
+            playMusic(bestRoundMusic);
+        }
+
+        function restartGame() {
+            document.getElementById("resultSection").style.display = "none";
+            document.getElementById("startButton").style.display = "block";
+            document.getElementById("correct").innerText = 0;
+            document.getElementById("wrong").innerText = 0;
+            document.getElementById("timer").innerText = 30;
+            testRound = 0;
+            gameRound = 0;
+            roundResults = [];
+            document.body.style.backgroundColor = '';
+            
+            if (player) {
+                player.stopVideo();
+            }
+        }
+
+        window.onload = function() {
+            document.getElementById("startButton").style.display = "block";
+        };
+    </script>
+</body>
+</html>
