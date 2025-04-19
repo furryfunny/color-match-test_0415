@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>顏色與文字匹配測試</title>
-    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         /* 基本樣式 */
         body { 
@@ -122,6 +121,28 @@
             padding: 5px;
         }
 
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            color: #333;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .form-input.error {
+            border-color: #e74c3c;
+            background-color: #fff8f8;
+        }
+
         /* 按鈕樣式 */
         button {
             background-color: #4CAF50;
@@ -170,15 +191,6 @@
         .game-button:hover {
             background-color: #888888;
             transform: translateY(-2px);
-        }
-
-        /* YouTube播放器容器 */
-        #playerContainer {
-            position: fixed;
-            bottom: -9999px;
-            left: -9999px;
-            opacity: 0;
-            pointer-events: none;
         }
 
         /* 進度條樣式 */
@@ -244,6 +256,15 @@
             background-color: #f8f9fa;
             border-left: 4px solid #4CAF50;
         }
+
+        /* 更新音頻控制樣式 */
+        .audio-control {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -257,17 +278,13 @@
         <h2 class="form-title">基本資料填寫</h2>
         
         <div class="form-group">
-            <label for="musicHabit">是否有聽音樂習慣:</label>
-            <select id="musicHabit">
-                <option value="">--請選擇--</option>
-                <option value="yes">是</option>
-                <option value="no">否</option>
-            </select>
-            <div class="error-message">請選擇是否有聽音樂習慣</div>
+            <label for="name">姓名:</label>
+            <input type="text" id="name" class="form-input">
+            <div class="error-message">請輸入姓名</div>
         </div>
 
         <div class="form-group">
-            <label for="musicMajor">音樂系或非音樂系:</label>
+            <label for="musicMajor">系級:</label>
             <select id="musicMajor">
                 <option value="">--請選擇--</option>
                 <option value="music">音樂系</option>
@@ -277,39 +294,26 @@
         </div>
 
         <div class="form-group">
-            <label for="grade">學制年級:</label>
+            <label for="grade">學制:</label>
             <select id="grade">
                 <option value="">--請選擇--</option>
                 <option value="undergraduate">大學生</option>
                 <option value="graduate">研究生</option>
             </select>
-            <div class="error-message">請選擇您的學制年級</div>
+            <div class="error-message">請選擇您的學制</div>
         </div>
 
         <div class="form-group">
-            <label for="musicListeningHabit">工作時聆聽音樂之習慣:</label>
+            <label for="musicListeningHabit">工作/讀書時聆聽音樂習慣:</label>
             <select id="musicListeningHabit">
                 <option value="">--請選擇--</option>
                 <option value="always">總是</option>
                 <option value="often">經常</option>
                 <option value="sometimes">偶爾</option>
                 <option value="rarely">很少</option>
-                <option value="never">從未</option>
+                <option value="never">無</option>
             </select>
             <div class="error-message">請選擇您的聆聽音樂習慣</div>
-        </div>
-
-        <div class="form-group">
-            <label for="musicPreference">之前的聽音樂偏好:</label>
-            <select id="musicPreference">
-                <option value="">--請選擇--</option>
-                <option value="classical">古典</option>
-                <option value="none">無</option>
-                <option value="indie">獨立音樂</option>
-                <option value="jazz">爵士</option>
-                <option value="other">其他</option>
-            </select>
-            <div class="error-message">請選擇您的音樂偏好</div>
         </div>
 
         <button onclick="submitForm()">下一步</button>
@@ -370,11 +374,6 @@
         <button onclick="restartGame()">重新開始</button>
     </div>
 
-    <!-- YouTube播放器容器 -->
-    <div id="playerContainer">
-        <div id="player"></div>
-    </div>
-
     <script>
         let words = ["紅色", "藍色", "綠色", "黃色"];
         let colors = ["#D98880", "#85C1E9", "#A9DFBF", "#F7DC6F"];
@@ -396,78 +395,51 @@
         // 音樂資料設定
         const musicData = {
             'jazz': {
-                videoId: '-t0snL80158',
-                startTime: 50
+                url: 'jazz.mp3'
             },
             'classical': {
-                videoId: '9iePyP2HOr8',
-                startTime: 12
+                url: 'classical.mp3'
             },
             'indie': {
-                videoId: 'WPpDyIJdasg',
-                startTime: 100
+                url: 'indie.mp3'
             }
         };
 
-        let player;
-        let currentMusicSequence = [];
-        let currentRoundMusic = '';
-        let bestRoundMusic = '';
+        let audioPlayers = {};
 
-        // YouTube Player API 準備就緒
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '0',
-                width: '0',
-                playerVars: {
-                    'autoplay': 0,
-                    'controls': 0
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-        }
-
-        function onPlayerReady(event) {
-            // 播放器準備就緒
-            player.setVolume(50); // 設定音量為50%
-        }
-
-        function onPlayerStateChange(event) {
-            // 如果影片結束，重新從指定時間開始播放
-            if (event.data === YT.PlayerState.ENDED && currentRoundMusic !== 'none') {
-                const musicInfo = musicData[currentRoundMusic];
-                if (musicInfo) {
-                    player.seekTo(musicInfo.startTime);
-                    player.playVideo();
-                }
+        // 預加載音樂
+        function preloadMusic() {
+            for (const [type, data] of Object.entries(musicData)) {
+                audioPlayers[type] = new Audio(data.url);
+                audioPlayers[type].load();
+                audioPlayers[type].loop = true;
             }
         }
 
-        // 改進的音樂播放邏輯
+        // 播放音樂
         function playMusic(musicType) {
-            if (musicType === 'none') {
-                if (player) {
-                    player.stopVideo();
+            // 停止所有其他音樂
+            Object.values(audioPlayers).forEach(player => {
+                player.pause();
+                player.currentTime = 0;
+            });
+            
+            if (musicType === 'none') return;
+            
+            const player = audioPlayers[musicType];
+            if (player) {
+                player.currentTime = 0; // 從頭開始播放
+                player.volume = 0.5; // 設定音量為 50%
+                try {
+                    const playPromise = player.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log('播放失敗:', error);
+                        });
+                    }
+                } catch (error) {
+                    console.log('播放出錯:', error);
                 }
-                return;
-            }
-
-            const musicInfo = musicData[musicType];
-            if (musicInfo && player) {
-                // 檢查是否已經在播放同一首歌
-                if (player.getVideoData && 
-                    player.getVideoData() && 
-                    player.getVideoData().video_id === musicInfo.videoId &&
-                    player.getPlayerState() === YT.PlayerState.PLAYING) {
-                    return; // 如果是同一首歌且正在播放，就不要重新載入
-                }
-                player.loadVideoById({
-                    'videoId': musicInfo.videoId,
-                    'startSeconds': musicInfo.startTime
-                });
             }
         }
 
@@ -481,33 +453,30 @@
         }
 
         function submitForm() {
-            const selects = [
-                { id: "musicHabit", label: "是否有聽音樂習慣" },
-                { id: "musicMajor", label: "音樂系或非音樂系" },
-                { id: "grade", label: "學制年級" },
-                { id: "musicListeningHabit", label: "工作時聆聽音樂之習慣" },
-                { id: "musicPreference", label: "之前的聽音樂偏好" }
+            const formFields = [
+                { id: "name", label: "姓名" },
+                { id: "musicMajor", label: "系級" },
+                { id: "grade", label: "學制" },
+                { id: "musicListeningHabit", label: "工作/讀書時聆聽音樂習慣" }
             ];
 
             let isValid = true;
 
-            selects.forEach(item => {
-                const select = document.getElementById(item.id);
-                const errorMessage = select.nextElementSibling;
+            formFields.forEach(item => {
+                const element = document.getElementById(item.id);
+                const errorMessage = element.nextElementSibling;
                 
-                if (!select.value) {
+                if (!element.value) {
                     isValid = false;
-                    select.classList.add('error');
+                    element.classList.add('error');
                     errorMessage.style.display = 'block';
                 } else {
-                    select.classList.remove('error');
+                    element.classList.remove('error');
                     errorMessage.style.display = 'none';
                 }
             });
 
-            if (!isValid) {
-                return;
-            }
+            if (!isValid) return;
 
             const musicHabit = document.getElementById("musicListeningHabit").value;
             currentMusicSequence = [...musicSequences[musicHabit]];
@@ -704,13 +673,17 @@
             roundResults = [];
             document.body.style.backgroundColor = '';
             
-            if (player) {
-                player.stopVideo();
+            if (audioPlayers) {
+                Object.values(audioPlayers).forEach(player => {
+                    player.pause();
+                    player.currentTime = 0;
+                });
             }
         }
 
         window.onload = function() {
             document.getElementById("startButton").style.display = "block";
+            preloadMusic();
         };
     </script>
 </body>
