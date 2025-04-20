@@ -403,6 +403,13 @@
             margin: 20px auto;
             display: block;
         }
+
+        /* 新增音量提醒樣式 */
+        .volume-reminder {
+            color: #ff0000;
+            font-weight: bold;
+            margin: 15px 0;
+        }
     </style>
 </head>
 
@@ -545,6 +552,7 @@
                 <li>答題時間為20秒</li>
                 <li>每回合間休息時間為15秒</li>
             </ul>
+            <p class="volume-reminder">⚠️ 請將音量調整至舒適大小</p>
             <div class="prep-timer">
                 準備時間：<span id="prepTimer">15</span> 秒
             </div>
@@ -574,7 +582,6 @@
             <p>正確: <span id="break-correct">0</span> 次</p>
             <p>錯誤: <span id="break-wrong">0</span> 次</p>
             <p>15秒後將自動進入下一回合，請保持專注。</p>
-            <p>回合間的休息時間確保每位參與者聽到相同段落的音樂。</p>
             <p>休息剩餘時間：<span id="break-timer">15</span> 秒</p>
         </div>
     </div>
