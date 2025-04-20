@@ -410,6 +410,30 @@
             font-weight: bold;
             margin: 15px 0;
         }
+
+        .thank-you-message {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: fadeIn 1s ease;
+        }
+
+        .thank-you-message h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .thank-you-message p {
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 
@@ -539,6 +563,37 @@
         <button id="startGameButton" style="display:none;" onclick="startGame()">進入遊戲</button>
     </div>
 
+    <!-- 新增練習測驗介紹頁面 -->
+    <div id="practiceIntroSection" class="center-container" style="display: none;">
+        <h2>準備開始練習測驗</h2>
+        <div class="instruction-content">
+            <p>接下來有10題練習題，每題顯示1秒鐘</p>
+            <p>未作答的題目將計入錯誤</p>
+            <p>讓我們先熟悉一下遊戲節奏吧！</p>
+            <button onclick="startPractice()" class="next-button">開始練習</button>
+        </div>
+    </div>
+
+    <!-- 新增練習測驗區塊 -->
+    <div id="practiceSection" class="center-container" style="display: none;">
+        <h2>練習測驗</h2>
+        <p>接下來進行10題練習，每題1秒，請盡快作答</p>
+        <div id="practiceWord" style="font-size: 5em; margin: 20px; color: white; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">顏色</div>
+        <div class="inline-buttons">
+            <button class="game-button" onclick="checkPracticeAnswer(true)">O</button>
+            <button class="game-button" onclick="checkPracticeAnswer(false)">X</button>
+        </div>
+        <div class="practice-result" style="display: none;">
+            <h3>練習結果</h3>
+            <p>正確: <span id="practice-correct">0</span> 題</p>
+            <p>錯誤: <span id="practice-wrong">0</span> 題</p>
+            <div class="inline-buttons">
+                <button onclick="startGame()">準備好了，開始遊戲</button>
+                <button onclick="restartPractice()">再測試一次</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 遊戲說明頁面 -->
     <div id="instructionSection" class="center-container" style="display: none;">
         <h2>遊戲說明</h2>
@@ -586,14 +641,13 @@
         </div>
     </div>
 
-    <!-- 修改結果區塊中的最佳回合顯示 -->
+    <!-- 修改結果區塊，移除重新開始按鈕 -->
     <div id="resultSection" class="center-container">
         <h2>測試結果</h2>
         <div class="result-info">
             <p id="roundResults"></p>
             <p>最佳回合: <span id="bestRound">古典音樂</span> 回合</p>
         </div>
-        <button onclick="restartGame()">重新開始</button>
     </div>
 
     <script>
@@ -608,6 +662,7 @@
         let colorTestSequence = ['red', 'blue', 'green', 'yellow'];
         let questionQueue = [];
         let currentQuestion = 0;
+        let canAnswer = true;
 
         // 音樂播放順序設定
         const musicSequences = {
@@ -815,15 +870,107 @@
                 }, 1500);
             } else {
                 setTimeout(() => {
-                    feedback.innerText = "測試完成！您可以開始正式遊戲了";
+                    feedback.innerText = "測試完成！即將進入練習環節";
                     feedback.className = "test-feedback feedback-correct";
-                    document.getElementById("startGameButton").style.display = "block";
+                    setTimeout(() => {
+                        document.getElementById("testSection").style.display = "none";
+                        document.getElementById("practiceIntroSection").style.display = "block";
+                    }, 1500);
                 }, 1500);
             }
         }
 
+        // 新增變數
+        let canAnswerPractice = true;
+
+        function startPractice() {
+            document.getElementById("practiceIntroSection").style.display = "none";
+            document.getElementById("practiceSection").style.display = "block";
+            document.querySelector("#practiceSection .practice-result").style.display = "none";
+            document.getElementById("practice-correct").innerText = "0";
+            document.getElementById("practice-wrong").innerText = "0";
+            canAnswerPractice = true;
+            practiceQuestion = 0;
+            preparePracticeQueue();
+            startPracticeTimer();
+        }
+
+        function preparePracticeQueue() {
+            practiceQueue = [];
+            for (let i = 0; i < 10; i++) {
+                const wordIndex = Math.floor(Math.random() * words.length);
+                const colorIndex = Math.floor(Math.random() * colors.length);
+                practiceQueue.push({
+                    word: words[wordIndex],
+                    colorIndex: colorIndex
+                });
+            }
+        }
+
+        function startPracticeTimer() {
+            showNextPracticeQuestion();
+            practiceTimer = setInterval(() => {
+                if (practiceQuestion >= 10) {
+                    clearInterval(practiceTimer);
+                    calculateFinalPracticeScore();
+                    showPracticeResult();
+                    return;
+                }
+                // 在切換題目前，如果當前題目未作答，計入錯誤
+                if (canAnswerPractice) {
+                    const currentWrong = parseInt(document.getElementById("practice-wrong").innerText);
+                    document.getElementById("practice-wrong").innerText = currentWrong + 1;
+                }
+                canAnswerPractice = true;
+                showNextPracticeQuestion();
+            }, 1000);
+        }
+
+        function calculateFinalPracticeScore() {
+            // 最後一題如果未作答也要計入錯誤
+            if (canAnswerPractice) {
+                const currentWrong = parseInt(document.getElementById("practice-wrong").innerText);
+                document.getElementById("practice-wrong").innerText = currentWrong + 1;
+            }
+        }
+
+        function showNextPracticeQuestion() {
+            if (practiceQuestion >= 10) return;
+            
+            canAnswerPractice = true;  // 新題目可以作答
+            const question = practiceQueue[practiceQuestion];
+            document.getElementById("practiceWord").innerText = question.word;
+            document.body.style.backgroundColor = colors[question.colorIndex];
+            document.getElementById("practiceWord").setAttribute("data-correct", 
+                words.indexOf(question.word) === question.colorIndex);
+            practiceQuestion++;
+        }
+
+        function checkPracticeAnswer(isCorrect) {
+            if (!canAnswerPractice) return;  // 如果不可作答就直接返回
+            
+            const correct = document.getElementById("practiceWord").getAttribute("data-correct") === "true";
+            if (isCorrect === correct) {
+                const currentCorrect = parseInt(document.getElementById("practice-correct").innerText);
+                document.getElementById("practice-correct").innerText = currentCorrect + 1;
+            } else {
+                const currentWrong = parseInt(document.getElementById("practice-wrong").innerText);
+                document.getElementById("practice-wrong").innerText = currentWrong + 1;
+            }
+            
+            canAnswerPractice = false;  // 答題後就不能再答了
+        }
+
+        function showPracticeResult() {
+            document.querySelector("#practiceSection .practice-result").style.display = "block";
+        }
+
+        function restartPractice() {
+            startPractice();
+        }
+
         function startGame() {
-            document.getElementById("testSection").style.display = "none";
+            document.getElementById("practiceSection").style.display = "none";
             document.getElementById("instructionSection").style.display = "block";
             
             // 在這裡開始播放第一輪音樂
@@ -877,6 +1024,7 @@
         function showNextQuestion() {
             if (currentQuestion >= 20) {
                 clearInterval(timer);
+                calculateFinalScore();  // 新增：計算最終分數
                 saveRoundResults();
                 if (gameRound < 4) {
                     showBreak();
@@ -886,6 +1034,13 @@
                 return;
             }
 
+            // 在切換題目前，如果允許作答，表示上一題未作答，計入錯誤
+            if (canAnswer) {
+                const currentWrong = parseInt(document.getElementById("wrong").innerText);
+                document.getElementById("wrong").innerText = currentWrong + 1;
+            }
+
+            canAnswer = true;  // 新題目可以作答
             const question = questionQueue[currentQuestion];
             document.getElementById("word").innerText = question.word;
             document.body.style.backgroundColor = colors[question.colorIndex];
@@ -895,6 +1050,8 @@
         }
 
         function checkAnswer(isCorrect) {
+            if (!canAnswer) return;  // 如果不可作答就直接返回
+
             const correct = document.getElementById("word").getAttribute("data-correct") === "true";
             if (isCorrect === correct) {
                 const currentCorrect = parseInt(document.getElementById("correct").innerText);
@@ -903,12 +1060,25 @@
                 const currentWrong = parseInt(document.getElementById("wrong").innerText);
                 document.getElementById("wrong").innerText = currentWrong + 1;
             }
+            
+            canAnswer = false;  // 答題後就不能再答了
+        }
+
+        function calculateFinalScore() {
+            // 最後一題如果未作答也要計入錯誤
+            if (canAnswer) {
+                const currentWrong = parseInt(document.getElementById("wrong").innerText);
+                document.getElementById("wrong").innerText = currentWrong + 1;
+            }
         }
 
         function startTimer() {
             let timeLeft = 20;
             document.getElementById("timer").innerText = timeLeft;
-            showNextQuestion(); // 顯示第一題
+            document.getElementById("correct").innerText = "0";  // 重置計分
+            document.getElementById("wrong").innerText = "0";
+            canAnswer = true;  // 重置作答狀態
+            showNextQuestion();
 
             timer = setInterval(() => {
                 timeLeft--;
@@ -916,6 +1086,7 @@
                 
                 if (timeLeft <= 0) {
                     clearInterval(timer);
+                    calculateFinalScore();  // 新增：計算最終分數
                     saveRoundResults();
                     if (gameRound < 4) {
                         showBreak();
@@ -1093,26 +1264,22 @@
 工作/讀書時聆聽音樂習慣: ${habitText}\n
 測驗結果：\n${resultStats}`;
 
-            alert(summary);
-        }
-
-        function restartGame() {
-            document.getElementById("resultSection").style.display = "none";
-            document.getElementById("startButton").style.display = "block";
-            document.getElementById("correct").innerText = 0;
-            document.getElementById("wrong").innerText = 0;
-            document.getElementById("timer").innerText = 30;
-            testRound = 0;
-            gameRound = 0;
-            roundResults = [];
-            document.body.style.backgroundColor = '';
-            
-            if (audioPlayers) {
-                Object.values(audioPlayers).forEach(player => {
-                    player.pause();
-                    player.currentTime = 0;
-                });
-            }
+            // 顯示結果統計 alert
+            setTimeout(() => {
+                alert(summary);
+                // alert 關閉後顯示感謝訊息
+                document.getElementById("resultSection").style.display = "none";
+                const thankYouDiv = document.createElement("div");
+                thankYouDiv.className = "center-container";
+                thankYouDiv.innerHTML = `
+                    <div class="thank-you-message">
+                        <h3>🎉 測試完成！</h3>
+                        <p>非常感謝您的參與！您的寶貴時間和回饋對我們的研究有莫大的幫助 🙏</p>
+                        <p>祝您有美好的一天 ✨</p>
+                    </div>
+                `;
+                document.body.appendChild(thankYouDiv);
+            }, 500);
         }
 
         window.onload = function() {
