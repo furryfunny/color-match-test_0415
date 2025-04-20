@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>顏色與文字匹配測試</title>
+    <title>Stroop Test 專注力測驗</title>
     <style>
         /* 基本樣式 */
         body { 
             font-family: 'Microsoft JhengHei', sans-serif; 
             text-align: center; 
-            transition: background-color 0.2s;
+            transition: background-color 0.1s;
             margin: 0;
             padding: 20px;
         }
@@ -20,7 +20,7 @@
         }
 
         #word, #testWord { 
-            font-size: 3em; 
+            font-size: 5em; 
             margin: 20px; 
             color: white; 
             font-weight: bold; 
@@ -193,13 +193,13 @@
             transform: translateY(-2px);
         }
 
-        /* 進度條樣式 */
+        /* 修改進度條樣式 */
         .progress-bar {
             width: 300px;
             height: 10px;
             background-color: #eee;
             border-radius: 5px;
-            margin: 20px 0;
+            margin: 20px auto;  /* 改為 auto 實現置中 */
             overflow: hidden;
         }
 
@@ -265,17 +265,214 @@
             border-radius: 8px;
             text-align: center;
         }
+
+        /* 開始按鈕置中 */
+        #startButton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            padding: 20px 40px;
+        }
+
+        /* 色彩辨識測驗樣式 */
+        .color-test {
+            display: none;
+            text-align: center;
+        }
+
+        .color-button {
+            font-size: 24px;
+            margin: 10px;
+            padding: 15px 30px;
+        }
+
+        /* 色塊樣式 */
+        .color-block {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            margin: 10px;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* 遊戲說明樣式更新 */
+        .instruction-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        .instruction-content ul {
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .instruction-content li {
+            margin: 15px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .instruction-content li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+        }
+
+        .prep-timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        /* 色彩辨識測驗樣式更新 */
+        .color-answer-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 400px;
+            margin: 30px auto;
+        }
+
+        .color-answer-button {
+            font-size: 24px;
+            padding: 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .color-answer-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 新增顏色按鈕樣式 */
+        .btn-red { background-color: #D98880; }
+        .btn-blue { background-color: #85C1E9; }
+        .btn-green { background-color: #A9DFBF; }
+        .btn-yellow { background-color: #F7DC6F; }
+
+        /* 新增樣式 */
+        .welcome-content, .instructions-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: left;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .section-block {
+            margin: 25px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .highlight {
+            font-size: 1.2em;
+            color: #2c3e50;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .privacy-notice {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .next-button {
+            margin: 20px auto;
+            display: block;
+        }
     </style>
 </head>
 
 <body>
-    <h1>顏色與文字匹配測試</h1>
+    <h1>Stroop Test 專注力測驗</h1>
     
     <button id="startButton" onclick="showForm()">開始測試</button>
 
+    <!-- 新增歡迎頁面 -->
+    <div id="welcomeSection" class="center-container">
+        <h1>🎯 歡迎參加《音樂與專注力測驗》</h1>
+        <div class="welcome-content">
+            <p>您好！感謝您參與本研究，這是一項由國立台灣師範大學音樂系進行的學術研究測驗，旨在探討「背景音樂對專注力的影響」。</p>
+            <div class="section-block">
+                <h2>📌 測驗目的：</h2>
+                <p>我們想了解在不同音樂情境下，人的專注力表現是否會受到影響。</p>
+                <p>這項研究將協助我們更深入認識音樂與注意力之間的關係，並應用於未來的學習與教育設計。</p>
+            </div>
+            <button onclick="showInstructions()" class="next-button">下一頁</button>
+        </div>
+    </div>
+
+    <!-- 新增說明頁面 -->
+    <div id="instructionsSection" class="center-container" style="display: none;">
+        <h2>🧪 測驗方式說明</h2>
+        <div class="instructions-content">
+            <p>這是一個根據「Stroop Effect（史楚普效應）」設計的網頁遊戲。</p>
+            <p>畫面中會出現一個中文字（如「紅」「綠」「藍」等）搭配一種背景顏色，<br>您的任務是判斷：</p>
+            <p class="highlight">文字的意思 是否與 顏色背景 相符？</p>
+            <p>並在1秒內點選「✅」或「❌」作答。</p>
+            
+            <div class="section-block">
+                <h3>🎧 測驗包含四個不同背景音樂情境：</h3>
+                <ul>
+                    <li>無音樂</li>
+                    <li>古典音樂（Mozart）</li>
+                    <li>爵士音樂（Miles Davis）</li>
+                    <li>獨立音樂（Deftones）</li>
+                </ul>
+            </div>
+            
+            <p>• 每一關進行 20 秒，每關之間會有 15 秒休息時間<br>
+               • 系統會隨機播放音樂情境，每秒出現一道題目<br>
+               • 請盡量準確、快速地作答！</p>
+            
+            <button onclick="startTest()" class="next-button">開始測驗</button>
+        </div>
+    </div>
+
+    <!-- 更新色彩辨識測驗區塊 -->
+    <div id="colorTest" class="center-container" style="display: none;">
+        <h2>色彩辨識測驗</h2>
+        <p>請選擇與文字相符的顏色按鈕：</p>
+        <div id="colorTestWord" style="font-size: 5em; margin: 30px; font-weight: bold; color: black;">紅</div>
+        <div class="color-answer-buttons">
+            <button class="color-answer-button btn-red" onclick="checkColorAnswer('red')"></button>
+            <button class="color-answer-button btn-blue" onclick="checkColorAnswer('blue')"></button>
+            <button class="color-answer-button btn-green" onclick="checkColorAnswer('green')"></button>
+            <button class="color-answer-button btn-yellow" onclick="checkColorAnswer('yellow')"></button>
+        </div>
+        <p id="colorTestFeedback"></p>
+        <div class="progress-bar">
+            <div class="progress" style="width: 0%"></div>
+        </div>
+    </div>
+
     <!-- 表單區塊 -->
-    <div id="formSection" class="center-container">
+    <div id="formSection" class="center-container" style="display: none;">
         <h2 class="form-title">基本資料填寫</h2>
+        <p class="privacy-notice">您所提供的資料僅供研究使用，不會揭露個人身份，請放心填寫。</p>
         
         <div class="form-group">
             <label for="name">姓名:</label>
@@ -337,6 +534,26 @@
         <button id="startGameButton" style="display:none;" onclick="startGame()">進入遊戲</button>
     </div>
 
+    <!-- 遊戲說明頁面 -->
+    <div id="instructionSection" class="center-container" style="display: none;">
+        <h2>遊戲說明</h2>
+        <div class="instruction-content">
+            <p>遊戲規則：</p>
+            <ul>
+                <li>每回合共有20題，每題顯示1秒</li>
+                <li>若題目文字顏色與背景顏色相符，請按 O</li>
+                <li>若題目文字顏色與背景顏色不相符，請按 X</li>
+                <li>每個顏色會出現5次</li>
+                <li>答題時間為20秒</li>
+                <li>每回合間休息時間為15秒</li>
+            </ul>
+            <div class="prep-timer">
+                準備時間：<span id="prepTimer">15</span> 秒
+            </div>
+        </div>
+        <button onclick="startGameAfterPrep()" style="display: none;" id="startAfterPrepButton">開始遊戲</button>
+    </div>
+
     <!-- 遊戲區塊 -->
     <div id="gameSection" class="center-container">
         <div id="word">顏色</div>
@@ -355,13 +572,14 @@
     <div id="breakSection" class="center-container">
         <h2>休息時間</h2>
         <div class="break-info">
-            <p>剛才的測試結果：</p>
+            <p>本回合測試結果：</p>
             <p>正確: <span id="break-correct">0</span> 次</p>
             <p>錯誤: <span id="break-wrong">0</span> 次</p>
-            <p>下一回合還是會有 30 秒的時間，請充分休息後再繼續。</p>
-            <p>休息剩餘時間：<span id="break-timer">10</span> 秒</p>
+            <p>未作答: <span id="break-unanswered">0</span> 次</p>
+            <p>15秒後將自動進入下一回合，請保持專注。</p>
+            <p>回合間的休息時間確保每位參與者聽到相同段落的音樂。</p>
+            <p>休息剩餘時間：<span id="break-timer">15</span> 秒</p>
         </div>
-        <button id="nextRoundButton" style="display:none;" onclick="startGame()">開始下一關</button>
     </div>
 
     <!-- 結果區塊 -->
@@ -375,13 +593,17 @@
     </div>
 
     <script>
-        let words = ["紅色", "藍色", "綠色", "黃色"];
+        let words = ["紅", "藍", "綠", "黃"];
         let colors = ["#D98880", "#85C1E9", "#A9DFBF", "#F7DC6F"];
         let testRound = 0;
         let gameRound = 0;
         let timer;
         let roundResults = [];
         let musicPreference = '';
+        let currentColorTest = 0;
+        let colorTestSequence = ['red', 'blue', 'green', 'yellow'];
+        let questionQueue = [];
+        let currentQuestion = 0;
 
         // 音樂播放順序設定
         const musicSequences = {
@@ -478,14 +700,63 @@
 
             if (!isValid) return;
 
+            // 移除音樂播放
             const musicHabit = document.getElementById("musicListeningHabit").value;
             currentMusicSequence = [...musicSequences[musicHabit]];
-            currentRoundMusic = currentMusicSequence[0];
-            playMusic(currentRoundMusic);
-
+            
             document.getElementById("formSection").style.display = "none";
-            document.getElementById("testSection").style.display = "block";
-            showTestWord();
+            document.getElementById("colorTest").style.display = "block";
+            currentColorQuestion = 0;
+            showNextColorQuestion();
+        }
+
+        // 更新色彩辨識測驗相關函數
+        let colorTestWords = ["紅", "藍", "綠", "黃"];
+        let currentColorQuestion = 0;
+
+        function showNextColorQuestion() {
+            const word = colorTestWords[currentColorQuestion];
+            const testWord = document.getElementById("colorTestWord");
+            testWord.innerText = word;
+            
+            // 更新進度條
+            const progress = (currentColorQuestion / colorTestWords.length) * 100;
+            document.querySelector('#colorTest .progress').style.width = `${progress}%`;
+        }
+
+        function checkColorAnswer(selectedColor) {
+            const currentWord = colorTestWords[currentColorQuestion];
+            const isCorrect = (
+                (selectedColor === 'red' && currentWord === "紅") ||
+                (selectedColor === 'blue' && currentWord === "藍") ||
+                (selectedColor === 'green' && currentWord === "綠") ||
+                (selectedColor === 'yellow' && currentWord === "黃")
+            );
+
+            const feedback = document.getElementById('colorTestFeedback');
+            
+            if (isCorrect) {
+                feedback.innerText = "答對了！";
+                feedback.className = "test-feedback feedback-correct";
+                currentColorQuestion++;
+                
+                if (currentColorQuestion >= colorTestWords.length) {
+                    setTimeout(() => {
+                        document.getElementById("colorTest").style.display = "none";
+                        document.getElementById("testSection").style.display = "block";
+                        showTestWord();
+                    }, 1000);
+                    return;
+                }
+
+                setTimeout(() => {
+                    feedback.innerText = "";
+                    showNextColorQuestion();
+                }, 1000);
+            } else {
+                feedback.innerText = "答錯了，請再試一次";
+                feedback.className = "test-feedback feedback-wrong";
+            }
         }
 
         function showTestWord() {
@@ -549,7 +820,30 @@
 
         function startGame() {
             document.getElementById("testSection").style.display = "none";
-            document.getElementById("breakSection").style.display = "none";
+            document.getElementById("instructionSection").style.display = "block";
+            
+            // 在這裡開始播放第一輪音樂
+            currentRoundMusic = currentMusicSequence[0];
+            playMusic(currentRoundMusic);
+            
+            startPrepTimer();
+        }
+
+        function startPrepTimer() {
+            let prepTime = 15;
+            document.getElementById("prepTimer").innerText = prepTime;
+            const prepTimer = setInterval(() => {
+                prepTime--;
+                document.getElementById("prepTimer").innerText = prepTime;
+                if (prepTime <= 0) {
+                    clearInterval(prepTimer);
+                    startGameAfterPrep(); // 直接開始遊戲
+                }
+            }, 1000);
+        }
+
+        function startGameAfterPrep() {
+            document.getElementById("instructionSection").style.display = "none";
             document.getElementById("gameSection").style.display = "block";
             gameRound++;
             
@@ -558,26 +852,46 @@
                 return;
             }
 
-            if (gameRound === 1) {
-                alert("接下來有 30 秒的時間進行測試，準備好就點擊確定開始！");
-            }
-
-            // 只有在需要時才切換音樂
-            if (currentRoundMusic !== currentMusicSequence[gameRound - 1]) {
-                currentRoundMusic = currentMusicSequence[gameRound - 1];
-                playMusic(currentRoundMusic);
-            }
-            
+            prepareQuestionQueue();
             startTimer();
-            generateQuestion();
+            showNextQuestion();
         }
 
-        function generateQuestion() {
-            let wordIndex = getRandomInt(words.length);
-            let colorIndex = getRandomInt(colors.length);
-            document.getElementById("word").innerText = words[wordIndex];
-            document.body.style.backgroundColor = colors[colorIndex];
-            document.getElementById("word").setAttribute("data-correct", wordIndex === colorIndex);
+        function prepareQuestionQueue() {
+            questionQueue = [];
+            words.forEach((word, index) => {
+                for (let i = 0; i < 5; i++) {
+                    questionQueue.push({
+                        word: word,
+                        colorIndex: Math.floor(Math.random() * colors.length)
+                    });
+                }
+            });
+            shuffleArray(questionQueue);
+        }
+
+        function showNextQuestion() {
+            if (currentQuestion >= 20) {
+                clearInterval(timer);
+                saveRoundResults();
+                if (gameRound < 4) {
+                    showBreak();
+                } else {
+                    showResult();
+                }
+                return;
+            }
+
+            const question = questionQueue[currentQuestion];
+            document.getElementById("word").innerText = question.word;
+            document.body.style.backgroundColor = colors[question.colorIndex];
+            document.getElementById("word").setAttribute("data-correct", 
+                words.indexOf(question.word) === question.colorIndex);
+
+            setTimeout(() => {
+                currentQuestion++;
+                showNextQuestion();
+            }, 1000);
         }
 
         function checkAnswer(isCorrect) {
@@ -591,7 +905,7 @@
         }
 
         function startTimer() {
-            let timeLeft = 30;
+            let timeLeft = 20; // 更改為20秒
             document.getElementById("timer").innerText = timeLeft;
             timer = setInterval(() => {
                 timeLeft--;
@@ -611,7 +925,16 @@
         function saveRoundResults() {
             let correct = parseInt(document.getElementById("correct").innerText);
             let wrong = parseInt(document.getElementById("wrong").innerText);
-            roundResults.push({ round: gameRound, correct: correct, wrong: wrong });
+            let unanswered = 20 - (correct + wrong); // 計算未作答題數
+            
+            roundResults.push({
+                round: gameRound,
+                correct: correct,
+                wrong: wrong,
+                unanswered: unanswered
+            });
+            
+            // 重置計數器
             document.getElementById("correct").innerText = 0;
             document.getElementById("wrong").innerText = 0;
         }
@@ -620,26 +943,70 @@
             const currentResult = roundResults[roundResults.length - 1];
             document.getElementById("gameSection").style.display = "none";
             document.getElementById("breakSection").style.display = "block";
-            document.getElementById("nextRoundButton").style.display = "none";
             
-            document.getElementById("break-correct").innerText = currentResult.correct;
-            document.getElementById("break-wrong").innerText = currentResult.wrong;
+            // 先從遊戲區域獲取當前數值
+            const correct = parseInt(document.getElementById("correct").innerText) || 0;
+            const wrong = parseInt(document.getElementById("wrong").innerText) || 0;
+            const unanswered = Math.max(0, 20 - correct - wrong);
             
-            // 只有在需要時才切換音樂
-            if (gameRound < 4 && currentRoundMusic !== currentMusicSequence[gameRound]) {
-                currentRoundMusic = currentMusicSequence[gameRound];
-                playMusic(currentRoundMusic);
+            // 更新顯示結果
+            document.getElementById("break-correct").innerText = correct;
+            document.getElementById("break-wrong").innerText = wrong;
+            document.getElementById("break-unanswered").innerText = unanswered;
+
+            // 保存這次的結果
+            roundResults[roundResults.length - 1] = {
+                round: gameRound,
+                correct: correct,
+                wrong: wrong,
+                unanswered: unanswered
+            };
+
+            // 立即切換到下一關的音樂
+            const nextRoundMusic = currentMusicSequence[gameRound];
+            if (nextRoundMusic) {
+                // 確保先停止當前音樂
+                Object.values(audioPlayers).forEach(player => {
+                    player.pause();
+                    player.currentTime = 0;
+                });
+                // 播放下一關音樂
+                if (nextRoundMusic !== 'none') {
+                    const player = audioPlayers[nextRoundMusic];
+                    if (player) {
+                        player.currentTime = 0;
+                        player.volume = 0.5;
+                        player.play();
+                    }
+                }
             }
             
-            let breakTime = 10;
+            let breakTime = 15;
+            document.getElementById("break-timer").innerText = breakTime;
             const breakTimer = setInterval(() => {
                 breakTime--;
                 document.getElementById("break-timer").innerText = breakTime;
                 if (breakTime <= 0) {
                     clearInterval(breakTimer);
-                    document.getElementById("nextRoundButton").style.display = "block";
+                    startGameAfterBreak();
                 }
             }, 1000);
+        }
+
+        function startGameAfterBreak() {
+            document.getElementById("breakSection").style.display = "none";
+            document.getElementById("gameSection").style.display = "block";
+            gameRound++;
+            
+            if (gameRound > 4) {
+                showResult();
+                return;
+            }
+
+            prepareQuestionQueue();
+            currentQuestion = 0;
+            startTimer();
+            showNextQuestion();
         }
 
         function showResult() {
@@ -682,9 +1049,28 @@
         }
 
         window.onload = function() {
-            document.getElementById("startButton").style.display = "block";
+            document.getElementById("welcomeSection").style.display = "block";
+            document.getElementById("startButton").style.display = "none";
             preloadMusic();
         };
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // 新增函數
+        function showInstructions() {
+            document.getElementById("welcomeSection").style.display = "none";
+            document.getElementById("instructionsSection").style.display = "block";
+        }
+
+        function startTest() {
+            document.getElementById("instructionsSection").style.display = "none";
+            document.getElementById("formSection").style.display = "block";
+        }
     </script>
 </body>
 </html>
