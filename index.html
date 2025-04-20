@@ -157,9 +157,9 @@
         }
 
         button:hover {
-            background-color: #45a049;
             transform: translateY(-1px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            /* 移除背景色變化 */
         }
 
         button:disabled {
@@ -887,29 +887,29 @@
             document.body.style.backgroundColor = colors[question.colorIndex];
             document.getElementById("word").setAttribute("data-correct", 
                 words.indexOf(question.word) === question.colorIndex);
-
-            setTimeout(() => {
-                currentQuestion++;
-                showNextQuestion();
-            }, 1000);
+            currentQuestion++;
         }
 
         function checkAnswer(isCorrect) {
-            let correct = document.getElementById("word").getAttribute("data-correct") === "true";
+            const correct = document.getElementById("word").getAttribute("data-correct") === "true";
             if (isCorrect === correct) {
-                document.getElementById("correct").innerText = parseInt(document.getElementById("correct").innerText) + 1;
+                const currentCorrect = parseInt(document.getElementById("correct").innerText);
+                document.getElementById("correct").innerText = currentCorrect + 1;
             } else {
-                document.getElementById("wrong").innerText = parseInt(document.getElementById("wrong").innerText) + 1;
+                const currentWrong = parseInt(document.getElementById("wrong").innerText);
+                document.getElementById("wrong").innerText = currentWrong + 1;
             }
-            generateQuestion();
         }
 
         function startTimer() {
-            let timeLeft = 20; // 更改為20秒
+            let timeLeft = 20;
             document.getElementById("timer").innerText = timeLeft;
+            showNextQuestion(); // 顯示第一題
+
             timer = setInterval(() => {
                 timeLeft--;
                 document.getElementById("timer").innerText = timeLeft;
+                
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     saveRoundResults();
@@ -918,59 +918,48 @@
                     } else {
                         showResult();
                     }
+                    return;
                 }
+                showNextQuestion();
             }, 1000);
         }
 
         function saveRoundResults() {
-            let correct = parseInt(document.getElementById("correct").innerText);
-            let wrong = parseInt(document.getElementById("wrong").innerText);
-            let unanswered = 20 - (correct + wrong); // 計算未作答題數
-            
-            roundResults.push({
-                round: gameRound,
-                correct: correct,
-                wrong: wrong,
-                unanswered: unanswered
-            });
-            
-            // 重置計數器
-            document.getElementById("correct").innerText = 0;
-            document.getElementById("wrong").innerText = 0;
-        }
-
-        function showBreak() {
-            const currentResult = roundResults[roundResults.length - 1];
-            document.getElementById("gameSection").style.display = "none";
-            document.getElementById("breakSection").style.display = "block";
-            
-            // 先從遊戲區域獲取當前數值
             const correct = parseInt(document.getElementById("correct").innerText) || 0;
             const wrong = parseInt(document.getElementById("wrong").innerText) || 0;
-            const unanswered = Math.max(0, 20 - correct - wrong);
+            const unanswered = 20 - correct - wrong;
             
-            // 更新顯示結果
-            document.getElementById("break-correct").innerText = correct;
-            document.getElementById("break-wrong").innerText = wrong;
-            document.getElementById("break-unanswered").innerText = unanswered;
-
-            // 保存這次的結果
-            roundResults[roundResults.length - 1] = {
+            roundResults[gameRound - 1] = {
                 round: gameRound,
                 correct: correct,
                 wrong: wrong,
                 unanswered: unanswered
             };
 
+            // 儲存後立即更新顯示
+            document.getElementById("break-correct").innerText = correct;
+            document.getElementById("break-wrong").innerText = wrong;
+            document.getElementById("break-unanswered").innerText = unanswered;
+        }
+
+        function showBreak() {
+            const currentResult = roundResults[gameRound - 1];
+            document.getElementById("gameSection").style.display = "none";
+            document.getElementById("breakSection").style.display = "block";
+            
+            // 更新顯示結果
+            document.getElementById("break-correct").innerText = currentResult.correct;
+            document.getElementById("break-wrong").innerText = currentResult.wrong;
+            document.getElementById("break-unanswered").innerText = currentResult.unanswered;
+
             // 立即切換到下一關的音樂
             const nextRoundMusic = currentMusicSequence[gameRound];
             if (nextRoundMusic) {
-                // 確保先停止當前音樂
                 Object.values(audioPlayers).forEach(player => {
                     player.pause();
                     player.currentTime = 0;
                 });
-                // 播放下一關音樂
+                
                 if (nextRoundMusic !== 'none') {
                     const player = audioPlayers[nextRoundMusic];
                     if (player) {
@@ -1003,10 +992,13 @@
                 return;
             }
 
-            prepareQuestionQueue();
+            // 重置計數器和問題
+            document.getElementById("correct").innerText = "0";
+            document.getElementById("wrong").innerText = "0";
             currentQuestion = 0;
+            
+            prepareQuestionQueue();
             startTimer();
-            showNextQuestion();
         }
 
         function showResult() {
