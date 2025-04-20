@@ -411,28 +411,26 @@
     
     <button id="startButton" onclick="showForm()">開始測試</button>
 
-    <!-- 新增歡迎頁面 -->
+    <!-- 修改歡迎頁面內容 -->
     <div id="welcomeSection" class="center-container">
         <h1>🎯 歡迎參加《音樂與專注力測驗》</h1>
         <div class="welcome-content">
-            <p>您好！感謝您參與本研究，這是一項由國立台灣師範大學音樂系進行的學術研究測驗，旨在探討「背景音樂對專注力的影響」。</p>
-            <div class="section-block">
-                <h2>📌 測驗目的：</h2>
-                <p>我們想了解在不同音樂情境下，人的專注力表現是否會受到影響。</p>
-                <p>這項研究將協助我們更深入認識音樂與注意力之間的關係，並應用於未來的學習與教育設計。</p>
-            </div>
+            <p>大家好，我們是臺灣師範大學音樂系的同學！</p>
+            <p>由於課堂作業需求，</p>
+            <p>我們正在探討背景音樂對於人們專注力的影響，</p>
+            <p>於是開啟了一個小研究。希望大家能填答以下問題及體驗小遊戲（記得打開聲音喔🔊），謝謝🙏</p>
             <button onclick="showInstructions()" class="next-button">下一頁</button>
         </div>
     </div>
 
-    <!-- 新增說明頁面 -->
+    <!-- 更新說明頁面符號 -->
     <div id="instructionsSection" class="center-container" style="display: none;">
         <h2>🧪 測驗方式說明</h2>
         <div class="instructions-content">
             <p>這是一個根據「Stroop Effect（史楚普效應）」設計的網頁遊戲。</p>
             <p>畫面中會出現一個中文字（如「紅」「綠」「藍」等）搭配一種背景顏色，<br>您的任務是判斷：</p>
             <p class="highlight">文字的意思 是否與 顏色背景 相符？</p>
-            <p>並在1秒內點選「✅」或「❌」作答。</p>
+            <p>並在1秒內點選「O」或「X」作答。</p>
             
             <div class="section-block">
                 <h3>🎧 測驗包含四個不同背景音樂情境：</h3>
@@ -568,26 +566,25 @@
         </div>
     </div>
 
-    <!-- 休息區塊 -->
+    <!-- 修改休息區塊 -->
     <div id="breakSection" class="center-container">
         <h2>休息時間</h2>
         <div class="break-info">
             <p>本回合測試結果：</p>
             <p>正確: <span id="break-correct">0</span> 次</p>
             <p>錯誤: <span id="break-wrong">0</span> 次</p>
-            <p>未作答: <span id="break-unanswered">0</span> 次</p>
             <p>15秒後將自動進入下一回合，請保持專注。</p>
             <p>回合間的休息時間確保每位參與者聽到相同段落的音樂。</p>
             <p>休息剩餘時間：<span id="break-timer">15</span> 秒</p>
         </div>
     </div>
 
-    <!-- 結果區塊 -->
+    <!-- 修改結果區塊中的最佳回合顯示 -->
     <div id="resultSection" class="center-container">
         <h2>測試結果</h2>
         <div class="result-info">
             <p id="roundResults"></p>
-            <p>最佳回合: 第 <span id="bestRound">1</span> 回合</p>
+            <p>最佳回合: <span id="bestRound">古典音樂</span> 回合</p>
         </div>
         <button onclick="restartGame()">重新開始</button>
     </div>
@@ -932,14 +929,12 @@
             roundResults[gameRound - 1] = {
                 round: gameRound,
                 correct: correct,
-                wrong: wrong,
-                unanswered: unanswered
+                wrong: wrong + unanswered // 將未作答計入錯誤數量
             };
 
             // 儲存後立即更新顯示
             document.getElementById("break-correct").innerText = correct;
-            document.getElementById("break-wrong").innerText = wrong;
-            document.getElementById("break-unanswered").innerText = unanswered;
+            document.getElementById("break-wrong").innerText = wrong + unanswered;
         }
 
         function showBreak() {
@@ -950,7 +945,6 @@
             // 更新顯示結果
             document.getElementById("break-correct").innerText = currentResult.correct;
             document.getElementById("break-wrong").innerText = currentResult.wrong;
-            document.getElementById("break-unanswered").innerText = currentResult.unanswered;
 
             // 立即切換到下一關的音樂
             const nextRoundMusic = currentMusicSequence[gameRound];
@@ -1006,17 +1000,54 @@
             document.getElementById("breakSection").style.display = "none";
             document.getElementById("resultSection").style.display = "block";
             
-            let roundResultsText = roundResults.map(result => 
-                `<div class="round-result">
-                    第${result.round}回合 - 正確: ${result.correct} 錯誤: ${result.wrong}
-                </div>`
-            ).join('');
+            let roundResultsText = roundResults.map((result, index) => {
+                // 取得該回合的音樂類型
+                const musicType = currentMusicSequence[index];
+                let musicName = "";
+                switch(musicType) {
+                    case 'classical':
+                        musicName = "古典音樂";
+                        break;
+                    case 'jazz':
+                        musicName = "爵士音樂";
+                        break;
+                    case 'indie':
+                        musicName = "獨立音樂";
+                        break;
+                    case 'none':
+                        musicName = "無音樂";
+                        break;
+                }
+                
+                return `<div class="round-result">
+                    ${musicName} - 正確: ${result.correct} 錯誤: ${result.wrong}
+                </div>`;
+            }).join('');
             
             document.getElementById("roundResults").innerHTML = roundResultsText;
             
             let bestRound = roundResults.reduce((best, current) => 
                 (current.correct > best.correct ? current : best), roundResults[0]);
-            document.getElementById("bestRound").innerText = bestRound.round;
+            
+            // 顯示最佳表現的音樂類型
+            const bestMusicType = currentMusicSequence[bestRound.round - 1];
+            let bestMusicName = "";
+            switch(bestMusicType) {
+                case 'classical':
+                    bestMusicName = "古典音樂";
+                    break;
+                case 'jazz':
+                    bestMusicName = "爵士音樂";
+                    break;
+                case 'indie':
+                    bestMusicName = "獨立音樂";
+                    break;
+                case 'none':
+                    bestMusicName = "無音樂";
+                    break;
+            }
+            
+            document.getElementById("bestRound").innerText = bestMusicName;
             bestRoundMusic = currentMusicSequence[bestRound.round - 1];
             playMusic(bestRoundMusic);
         }
