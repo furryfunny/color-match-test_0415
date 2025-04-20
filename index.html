@@ -1081,11 +1081,8 @@
                     case 'indie': musicName = "獨立音樂"; break;
                     case 'none': musicName = "無音樂"; break;
                 }
-                const total = result.correct + result.wrong;
-                const correctRate = ((result.correct / 20) * 100).toFixed(1);
-                const wrongRate = ((result.wrong / 20) * 100).toFixed(1);
                 
-                return `${musicName}:\n正確率: ${correctRate}%, 錯誤率: ${wrongRate}%`;
+                return `${musicName}:\n正確: ${result.correct}題, 錯誤: ${result.wrong}題`;
             }).join('\n\n');
 
             const summary = `測試結果統計：\n
