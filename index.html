@@ -1057,6 +1057,46 @@
             document.getElementById("bestRound").innerText = bestMusicName;
             bestRoundMusic = currentMusicSequence[bestRound.round - 1];
             playMusic(bestRoundMusic);
+
+            // 新增統計資料 alert
+            const name = document.getElementById("name").value;
+            const major = document.getElementById("musicMajor").value === "music" ? "音樂系" : "非音樂系";
+            const grade = document.getElementById("grade").value === "undergraduate" ? "大學生" : "研究生";
+            const habit = document.getElementById("musicListeningHabit").value;
+            let habitText = "";
+            switch(habit) {
+                case 'always': habitText = "總是"; break;
+                case 'often': habitText = "經常"; break;
+                case 'sometimes': habitText = "偶爾"; break;
+                case 'rarely': habitText = "很少"; break;
+                case 'never': habitText = "無"; break;
+            }
+
+            let resultStats = roundResults.map((result, index) => {
+                const musicType = currentMusicSequence[index];
+                let musicName = "";
+                switch(musicType) {
+                    case 'classical': musicName = "古典音樂"; break;
+                    case 'jazz': musicName = "爵士音樂"; break;
+                    case 'indie': musicName = "獨立音樂"; break;
+                    case 'none': musicName = "無音樂"; break;
+                }
+                const total = result.correct + result.wrong;
+                const correctRate = ((result.correct / 20) * 100).toFixed(1);
+                const wrongRate = ((result.wrong / 20) * 100).toFixed(1);
+                
+                return `${musicName}:\n正確率: ${correctRate}%, 錯誤率: ${wrongRate}%`;
+            }).join('\n\n');
+
+            const summary = `測試結果統計：\n
+基本資料：
+姓名: ${name}
+系級: ${major}
+學制: ${grade}
+工作/讀書時聆聽音樂習慣: ${habitText}\n
+測驗結果：\n${resultStats}`;
+
+            alert(summary);
         }
 
         function restartGame() {
